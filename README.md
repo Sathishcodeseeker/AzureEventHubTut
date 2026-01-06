@@ -83,8 +83,10 @@ Is it time-series data?
 Is it just logging/recording?
 ❌ NO
 
-The Simple Test
+The Simple Test:
+
 Ask yourself these 3 questions:
+
 Question 1: "Does this event change something?"
 YES → Might need ordering
 NO → Probably don't need ordering
