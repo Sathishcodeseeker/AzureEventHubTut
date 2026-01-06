@@ -60,21 +60,26 @@ Example: Application Logs
 
 The Decision Matrix
 Question
+
 Need Ordering?
+
 Does event change entity state?
 ✅ YES
 Do later events depend on earlier ones?
 ✅ YES
+
 Can events be processed independently?
 ❌ NO
 Is it just counting/aggregating?
 ❌ NO
+
 Would wrong order give wrong result?
 ✅ YES
 Are events for same logical entity?
 ✅ PROBABLY
 Is it time-series data?
 ✅ PROBABLY
+
 Is it just logging/recording?
 ❌ NO
 
@@ -83,14 +88,16 @@ Ask yourself these 3 questions:
 Question 1: "Does this event change something?"
 YES → Might need ordering
 NO → Probably don't need ordering
+
 Question 2: "If I process events backwards, is the result wrong?"
 YES → Need ordering
 NO → Don't need ordering
+
 Question 3: "Are these events about the same thing (user, order, device)?"
 YES → Probably need ordering
 NO → Probably don't need ordering
 
-Summary: The Golden Rule
+**Summary: The Golden Rule**
 "If swapping the order of two events would produce a different (wrong) final result, you need ordering."
 Examples:
 Swap "OrderCreated" and "OrderShipped" → WRONG ✅ Need ordering
