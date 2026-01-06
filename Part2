@@ -115,4 +115,8 @@ Account C never receives $500!
 
 Result: Money created out of thin air! 💸💥
 
+Offset is managed by Azure Event Hub
+
+Checkpointing is managed in Blob Storage by App
+
 
