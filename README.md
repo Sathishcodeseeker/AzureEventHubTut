@@ -100,7 +100,7 @@ YES → Probably need ordering
 NO → Probably don't need ordering
 
 **Summary: The Golden Rule**
-"If swapping the order of two events would produce a different (wrong) final result, you need ordering."
+"If swapping the order of two events would produce a different (wrong) final result, you need ordering.".
 Examples:
-Swap "OrderCreated" and "OrderShipped" → WRONG ✅ Need ordering
-Swap "User A viewed page" and "User B viewed page" → Same result ❌ Don't need ordering
+Swap "OrderCreated" and "OrderShipped" → WRONG ✅ Need ordering.
+Swap "User A viewed page" and "User B viewed page" → Same result ❌ Don't need ordering.
