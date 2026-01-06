@@ -1,1 +1,118 @@
+What is an Offset?
+
+An offset is like a bookmark in Event Hubs - it tells you "where you are" in the stream of events.
+
+Simple Analogy:
+
+Reading a book:
+- Page 1 (offset: 0)
+- Page 2 (offset: 1)
+- Page 3 (offset: 2)
+- Page 4 (offset: 3) ← You're here (your bookmark)
+
+If you stop reading and come back later,
+the bookmark tells you where to continue.
+
+
+In Event Hubs:
+
+Event Stream (Partition 0):
+┌─────────────────────────────────────────────────┐
+│ Event 1 → Event 2 → Event 3 → Event 4 → Event 5 │
+│ (offset:0) (offset:1) (offset:2) (offset:3) ... │
+└─────────────────────────────────────────────────┘
+                              ▲
+                              │
+                    Last processed (offset: 2)
+
+What is Checkpointing?
+Checkpointing is the act of saving your offset so you can resume from that point later.
+
+Simple Analogy:
+
+Playing a video game:
+- You play for 2 hours
+- You reach Level 5
+- You SAVE your progress (checkpoint)
+- Game crashes
+- You reload → Start from Level 5 (not Level 1!)
+
+Without checkpoint: Start from beginning 💥
+With checkpoint: Resume from where you left off ✅
+
+In Event Hubs:
+
+Process events 1, 2, 3
+→ Checkpoint at offset 3
+→ App crashes
+→ App restarts
+→ Resume from offset 4 (don't reprocess 1, 2, 3)
+
+Why This Matters in Banking Applications
+Problem 1: Duplicate Transaction Processing
+Without Checkpointing:
+
+Events:
+1. Deposit $100 (offset: 0)
+2. Withdraw $50 (offset: 1)
+3. Deposit $25 (offset: 2)
+
+Processing:
+✅ Process event 1: Balance = $100
+✅ Process event 2: Balance = $50
+❌ App crashes before checkpointing!
+
+App restarts:
+🔄 Process event 1 AGAIN: Balance = $150 (WRONG!)
+🔄 Process event 2 AGAIN: Balance = $100 (WRONG!)
+✅ Process event 3: Balance = $125 (WRONG!)
+
+Customer's actual balance should be $75, but shows $125!
+Customer got extra $50! 💰💥
+
+With Checkpointing:
+
+Events:
+1. Deposit $100 (offset: 0)
+2. Withdraw $50 (offset: 1)
+3. Deposit $25 (offset: 2)
+
+Processing:
+✅ Process event 1: Balance = $100
+✅ Checkpoint at offset 0 ✓
+✅ Process event 2: Balance = $50
+✅ Checkpoint at offset 1 ✓
+❌ App crashes!
+
+App restarts:
+📖 Read checkpoint: offset 1
+⏭️ Resume from offset 2
+✅ Process event 3: Balance = $75 (CORRECT!)
+
+No duplicate processing! ✅
+
+Problem 2: Lost Transactions
+Without Proper Checkpointing:
+
+Events:
+1. Transfer $1000 from Account A to Account B (offset: 0)
+2. Transfer $500 from Account B to Account C (offset: 1)
+
+Processing:
+✅ Process event 1: 
+   - Debit A: -$1000
+   - Credit B: +$1000
+❌ App crashes before processing event 2!
+
+App restarts (no checkpoint):
+🔄 Starts from beginning (offset: 0)
+🔄 Process event 1 AGAIN:
+   - Debit A: -$1000 AGAIN (A loses $2000 total!)
+   - Credit B: +$1000 AGAIN (B gets $2000 total!)
+
+Event 2 never processed!
+Account C never receives $500!
+
+Result: Money created out of thin air! 💸💥
+
 
