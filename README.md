@@ -1,106 +1,50 @@
-# AzureEventHubTutorial:
+# Azure Event Hubs - Complete Guide
 
-When Do You Need Ordering vs Not?
+This repository contains comprehensive documentation for Azure Event Hubs, covering security, architecture, and integration patterns.
 
-The Core Question
-"If I process events out of order, will my system produce WRONG results?"
-YES → You need ordering
-NO → You don't need ordering
+## Table of Contents
 
-Scenarios Where You NEED Ordering ✅
-1. State Transitions (Most Common)
-When an entity goes through states that must happen in sequence:
-Example: Order Processing
+1. [Least Privilege Access Policy](01-least-privilege-access.md)
+2. [Managed Identities Overview](02-managed-identities.md)
+3. [System-Assigned vs User-Assigned Identities](03-system-vs-user-assigned.md)
+4. [Partition Keys - When and How to Use](04-partition-keys.md)
+5. [Ordering Requirements](05-ordering-requirements.md)
+6. [Offset and Checkpointing in Banking Apps](06-offset-and-checkpointing.md)
+7. [How Offset is Maintained Internally](07-offset-maintenance.md)
+8. [Databricks Integration with Event Hubs](08-databricks-integration.md)
 
-Event 1: OrderCreated (status: "pending")
-Event 2: PaymentReceived (status: "paid")
-Event 3: OrderShipped (status: "shipped")
-Event 4: OrderDelivered (status: "delivered")
+## Quick Start
 
-❌ WRONG ORDER = WRONG STATE!
+For a quick overview, start with:
+- [Managed Identities Overview](02-managed-identities.md)
+- [Partition Keys Guide](04-partition-keys.md)
 
-If processed as: Event 3 → Event 1 → Event 2 → Event 4
-Result: Order shows "shipped" before it was even created! 💥
+For banking/financial applications:
+- [Offset and Checkpointing](06-offset-and-checkpointing.md)
+- [Ordering Requirements](05-ordering-requirements.md)
 
+## Use Cases
 
-2. Financial Transactions
-Example: Bank Account
+### E-commerce Platform
+- Use partition keys with `orderId`
+- Implement checkpointing after database commits
+- Use System-Assigned identities for isolated services
 
-Starting balance: $100
+### Banking Application
+- Mandatory ordering for transactions
+- Checkpoint after every event
+- Implement idempotency checks
+- Use User-Assigned identities for shared services
 
-Event 1: Deposit $50  → Balance: $150
-Event 2: Withdraw $120 → Balance: $30
-Event 3: Deposit $20  → Balance: $50
+### IoT Platform
+- Use partition keys with `deviceId`
+- Time-series ordering required
+- Batch checkpointing acceptable
 
-❌ WRONG ORDER:
-Event 2 first → Withdraw $120 from $100 → INSUFFICIENT FUNDS! 💥
-But if Event 1 processed first, it would work!
+## Contributing
 
-Scenarios Where You DON'T Need Ordering ❌
-1. Independent Events (No State)
-Example: Page View Analytics
+This documentation is based on real-world scenarios and best practices. Feel free to suggest improvements.
 
-User A views page 1 at 10:00
-User B views page 2 at 10:01
-User C views page 3 at 10:02
+## License
 
-Processing order doesn't matter:
-- Just counting views
-- No dependency between events
-- Final count is same regardless of order
-
-✅ Process in any order: Still get correct total count
-
-Why it works:
-Events are independent
-Aggregation is commutative (A+B+C = C+B+A)
-
-2. Immutable Logs
-Example: Application Logs
-
-The Decision Matrix
-Question
-
-Need Ordering?
-
-Does event change entity state?
-✅ YES
-Do later events depend on earlier ones?
-✅ YES
-
-Can events be processed independently?
-❌ NO
-Is it just counting/aggregating?
-❌ NO
-
-Would wrong order give wrong result?
-✅ YES
-Are events for same logical entity?
-✅ PROBABLY
-Is it time-series data?
-✅ PROBABLY
-
-Is it just logging/recording?
-❌ NO
-
-The Simple Test:
-
-Ask yourself these 3 questions:
-
-Question 1: "Does this event change something?"
-YES → Might need ordering
-NO → Probably don't need ordering
-
-Question 2: "If I process events backwards, is the result wrong?"
-YES → Need ordering
-NO → Don't need ordering
-
-Question 3: "Are these events about the same thing (user, order, device)?"
-YES → Probably need ordering
-NO → Probably don't need ordering
-
-**Summary: The Golden Rule**
-"If swapping the order of two events would produce a different (wrong) final result, you need ordering.".
-Examples:
-Swap "OrderCreated" and "OrderShipped" → WRONG ✅ Need ordering.
-Swap "User A viewed page" and "User B viewed page" → Same result ❌ Don't need ordering.
+MIT License
